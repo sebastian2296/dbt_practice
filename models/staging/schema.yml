@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+    - name: staging
+
+      database: norse-bond-337916
+      schema: trips_data_all
+
+
+      tables:
+        - name: green_table
+        - name: yellow_table
