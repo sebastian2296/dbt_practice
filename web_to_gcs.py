@@ -5,6 +5,7 @@ import pyarrow.parquet as pq
 import pyarrow as pa
 from google.cloud import storage
 import logging
+import subprocess
 
 """
 Pre-reqs: 
@@ -48,20 +49,20 @@ table_schema_yellow = pa.schema(
         ('tpep_pickup_datetime', pa.timestamp('s')), 
         ('tpep_dropoff_datetime', pa.timestamp('s')), 
         ('passenger_count', pa.int64()), 
-        ('trip_distance', pa.int64()), 
+        ('trip_distance', pa.float64()), 
         ('RatecodeID', pa.string()), 
         ('store_and_fwd_flag', pa.string()), 
         ('PULocationID', pa.int64()), 
         ('DOLocationID', pa.int64()), 
         ('payment_type', pa.int64()), 
-        ('fare_amount',pa.int64()), 
-        ('extra',pa.int64()), 
-        ('mta_tax', pa.int64()), 
-        ('tip_amount', pa.int64()), 
-        ('tolls_amount', pa.int64()), 
-        ('improvement_surcharge', pa.int64()), 
-        ('total_amount', pa.int64()), 
-        ('congestion_surcharge', pa.int64())]
+        ('fare_amount',pa.float64()), 
+        ('extra',pa.float64()), 
+        ('mta_tax', pa.float64()), 
+        ('tip_amount', pa.float64()), 
+        ('tolls_amount', pa.float64()), 
+        ('improvement_surcharge', pa.float64()), 
+        ('total_amount', pa.float64()), 
+        ('congestion_surcharge', pa.float64())]
 
 )
 
@@ -102,15 +103,16 @@ def web_to_gcs(year, service):
             month = month[-2:]
             file_name = service + '_tripdata_' + year + '-' + month + '.csv'
             request_url = init_url + file_name
-            df = pd.read_csv(request_url)
-            df.to_csv(file_name, index = False)
+            os.system(f"wget {request_url} -O {file_name}")
             print(f"Local: {file_name}")
-            parquetized = format_to_parquet(file_name)
+            parquetized = format_to_parquet(file_name, service)
             file_name = file_name.replace('.csv', '.parquet')
             print(f"Parquet: {file_name}")
             upload_to_gcs(BUCKET, f"{service}/{file_name}", file_name)
             print(f"GCS: {service}/{file_name}")
 
 
-#web_to_gcs('2019', 'yellow')
+web_to_gcs('2019', 'green')
+web_to_gcs('2020', 'green')
+web_to_gcs('2019', 'yellow')
 web_to_gcs('2020', 'yellow')
